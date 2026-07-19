@@ -3,18 +3,8 @@
   <form catchsubmit="formSubmit">
     <van-field label="标题" required placeholder="请输入标题" name="title" value="{{title}}"/>
     <van-cell-group>
-      <van-field label="在哪里取件" required value="{{ pickUpAddress }}" name="pickUpAddress">
-        <van-button slot="button" size="small" type="primary" bindtap="onChooseLocation" data-btn-index="1">
-          选择地址
-        </van-button>
-      </van-field>
-      <!-- <van-field label="具体地址" required placeholder="请输入" /> -->
-      <van-field label="送到哪里去" required value="{{ arrivalAddress }}" name="arrivalAddress">
-        <van-button slot="button" size="small" type="primary" bindtap="onChooseLocation" data-btn-index="2">
-          选择地址
-        </van-button>
-      </van-field>
-      <!-- <van-field label="具体地址" required placeholder="请输入" /> -->
+      <van-field label="取件地址" required placeholder="如：菜鸟驿站、东门快递点" name="pickUpAddress" value="{{ pickUpAddress }}"/>
+      <van-field label="送达地址" required placeholder="如：东区宿舍1号楼" name="arrivalAddress" value="{{ arrivalAddress }}"/>
       <van-cell title="送达时间" is-link bind:click="onClickArrivalTime" value="{{ arrivalTime }}" />
       <van-popup show="{{ showArrivalTimePopup }}" bind:close="onCloseArrivalTimePopup" position="bottom">
         <van-datetime-picker type="time" filter="{{ filter }}" title="送达时间" min-hour="6" bind:confirm="onConfirmArrivalTime" bind:cancel="onCloseArrivalTimePopup"/>

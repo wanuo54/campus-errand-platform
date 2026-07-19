@@ -2,19 +2,33 @@
 <view class="container">
   
   <van-cell-group inset>
-    <van-cell is-link center bindtap="onShowDialog">
+    <van-cell is-link center bindtap="onShowDialog" wx:if="{{!hasUserInfo}}">
       <van-image slot="icon" round width="100rpx" height="100rpx" src="{{hasUserInfo?userInfo.avatarUrl:''}}"
       style="margin-right: 10rpx;" />
       <view slot="title" style="font-weight: bold;">
-        <block wx:if="{{!hasUserInfo}}">
-          <text>立即登录</text>
-        </block>
-        <block wx:else>
-          <text>{{userInfo.nickName}}</text>
-        </block>
+        <text>立即登录</text>
+      </view>
+    </van-cell>
+    <van-cell center wx:else>
+      <van-image slot="icon" round width="100rpx" height="100rpx" src="{{userInfo.avatarUrl}}"
+      style="margin-right: 10rpx;" />
+      <view slot="title" style="font-weight: bold;">
+        <text>{{userInfo.nickName}}</text>
       </view>
     </van-cell>
   </van-cell-group>
+
+  <!-- 钱包入口 -->
+  <van-cell-group inset wx:if="{{hasUserInfo}}" class="wallet-entry">
+    <van-cell is-link title="我的钱包" value="¥{{balance}}" label="点击查看余额和交易记录" bindtap="goWallet">
+    </van-cell>
+  </van-cell-group>
+
+  <view class="logout-btn" wx:if="{{hasUserInfo}}" bindtap="onShowLogoutDialog">
+    退出登录
+  </view>
+
+
 
   <van-dialog use-slot title="用户登录" show="{{ showDialog }}" bind:confirm="onConfirm" bind:close="onClose">
     <view class="avatar-container">
@@ -25,5 +39,13 @@
 	  </view>
   </van-dialog>
 
+  <van-dialog
+    title="提示"
+    show="{{ showLogoutDialog }}"
+    message="确定要退出登录吗？"
+    show-cancel-button
+    bind:confirm="onLogoutConfirm"
+    bind:cancel="onLogoutCancel"
+  />
 
 </view>

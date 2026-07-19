@@ -1,0 +1,138 @@
+/* pages/wallet/wallet.wxss */
+
+.wallet-page{
+  min-height: 100vh;
+  background-color: #f3f3f3;
+}
+
+.balance-card{
+  margin: 30rpx;
+  padding: 50rpx 40rpx 40rpx;
+  background: linear-gradient(135deg, #19be96 0%, #0fa87d 100%);
+  border-radius: 20rpx;
+  color: #fff;
+  box-shadow: 0 10rpx 30rpx rgba(25, 190, 150, 0.3);
+}
+
+.balance-label{
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+.balance-amount{
+  font-size: 72rpx;
+  font-weight: bold;
+  margin: 20rpx 0 40rpx;
+}
+
+.balance-btns{
+  display: flex;
+  gap: 30rpx;
+}
+
+.balance-btn{
+  flex: 1;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 36rpx;
+  font-size: 28rpx;
+}
+
+.balance-btn.outline{
+  background-color: transparent;
+  border: 1rpx solid rgba(255, 255, 255, 0.5);
+}
+
+.records-section{
+  margin: 30rpx;
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.records-title{
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+
+.record-item{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.record-item:last-child{
+  border-bottom: none;
+}
+
+.record-title{
+  font-size: 28rpx;
+  color: #333;
+}
+
+.record-time{
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.record-amount{
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.record-amount.income{
+  color: #19be96;
+}
+
+.record-amount.expense{
+  color: #ee0a24;
+}
+
+.empty-tip{
+  text-align: center;
+  color: #999;
+  font-size: 26rpx;
+  padding: 60rpx 0;
+}
+
+.recharge-content{
+  padding: 20rpx 0;
+}
+
+.quick-amounts{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.quick-item{
+  width: calc((100% - 40rpx) / 3);
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  background-color: #f7f8fa;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #323233;
+  border: 1rpx solid transparent;
+}
+
+.quick-item.active{
+  background-color: #e8f7f2;
+  color: #19be96;
+  border-color: #19be96;
+}
+
+.recharge-tip{
+  font-size: 22rpx;
+  color: #999;
+  text-align: center;
+  margin-top: 20rpx;
+}

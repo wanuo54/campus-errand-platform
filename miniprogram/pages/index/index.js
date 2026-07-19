@@ -24,10 +24,22 @@ Page({
                 text: '物品代送'
             }
         ],
-        orderList: []
+        orderList: [],
+        expandedIndex: -1  // 当前展开的订单索引，-1表示都不展开
     },
 
     onLoad(options){
+        this.loadOrderList();
+    },
+
+    onShow(){
+        // tabBar 页面切换时刷新列表
+        this.loadOrderList();
+        // 每次回到首页收起展开的详情
+        this.setData({ expandedIndex: -1 });
+    },
+
+    loadOrderList(){
         wx.cloud.callFunction({
             name: 'getOrderList',
             data: {
@@ -52,11 +64,34 @@ Page({
         })
     },
 
+    // 展开/收起订单详情
+    toggleDetail(e){
+        if (!app.globalData.openid) {
+            wx.showToast({
+              icon: 'none',
+              title: '请先登录',
+              complete: res => {
+                setTimeout(function() {
+                  wx.switchTab({
+                    url: '/pages/mine/mine',
+                  })
+                }, 2000);
+              }
+            })
+            return
+        }
+        const index = e.currentTarget.dataset.index;
+        const current = this.data.expandedIndex;
+        this.setData({
+            expandedIndex: current === index ? -1 : index
+        });
+    },
+
     handleAcceptOrder(e){
         if (!app.globalData.openid) {
             wx.showToast({
               icon: 'none',
-              title: '请先登陆',
+              title: '请先登录',
               complete: res => {
                 setTimeout(function() {
                   wx.switchTab({
@@ -68,9 +103,28 @@ Page({
             return
         }
         const id = e.currentTarget.dataset.orderId;
+        const index = e.currentTarget.dataset.index;
+        const order = this.data.orderList[index];
+
+        // 接单确认弹窗
+        wx.showModal({
+            title: '确认接单',
+            content: `确定要接这个订单吗？\n\n订单：${order.title}\n赏金：¥${order.reward}\n取件：${order.pickUpAddress}\n送达：${order.arrivalAddress}`,
+            confirmText: '确认接单',
+            confirmColor: '#1989fa',
+            success: res => {
+                if (res.confirm) {
+                    this.doAcceptOrder(id);
+                }
+            }
+        })
+    },
+
+    doAcceptOrder(id){
+        wx.showLoading({ title: '接单中...' });
         let updateData = {
             status: '进行中', 
-            orderTaker: app.globalData.openid,  //接单人
+            orderTaker: app.globalData.openid
         }
         wx.cloud.callFunction({
             name: 'updateOrder',
@@ -79,13 +133,44 @@ Page({
                 updateData
             },
             success: res => {
-                console.log("更新订单状态成功", res)
-                wx.navigateTo({
-                  url: "/pages/orderDetail/orderDetail?id="+id,
-                })
+                wx.hideLoading();
+                console.log("接单结果", res)
+                // 兼容新旧两种返回格式
+                const result = res.result || {};
+                const isSuccess = result.success === true || 
+                                  (result.errMsg && result.errMsg.indexOf('ok') > -1);
+                if (isSuccess) {
+                    wx.showToast({
+                        icon: 'success',
+                        title: '接单成功',
+                        duration: 1500
+                    });
+                    // 收起展开的详情
+                    this.setData({ expandedIndex: -1 });
+                    // 刷新列表
+                    setTimeout(() => {
+                        this.loadOrderList();
+                    }, 1500);
+                    // 跳转到订单详情
+                    setTimeout(() => {
+                        wx.navigateTo({
+                          url: "/pages/orderDetail/orderDetail?id="+id,
+                        })
+                    }, 2000);
+                } else {
+                    wx.showToast({
+                        icon: 'none',
+                        title: result.message || '接单失败，请重试'
+                    });
+                }
               },
               fail: err => {
-                console.log(err)
+                wx.hideLoading();
+                console.log(err);
+                wx.showToast({
+                    icon: 'none',
+                    title: '接单失败，请重试'
+                });
               }
         })
     }

@@ -6,23 +6,52 @@ App({
       console.error('请使用 2.2.3 或以上的基础库以使用云能力')
     } else {
       wx.cloud.init({
-        // env 参数说明：
-        //   env 参数决定接下来小程序发起的云开发调用（wx.cloud.xxx）会默认请求到哪个云环境的资源
-        //   此处请填入环境 ID, 环境 ID 可打开云控制台查看
-        //   如不填则使用默认环境（第一个创建的环境）
-        env: 'cloud1-2g2369rv1e0cbb5e',
+        env: 'cloud1-d2g8xapu734318bbb',
         traceUser: true,
       })
     }
     
     this.globalData = {}
-    this.globalData.openid = wx.getStorageSync("openid");
+    // 开发调试模式：从缓存读取模拟的 openid（如果有的话）
+    const mockOpenid = wx.getStorageSync("mockOpenid");
+    if (mockOpenid) {
+      this.globalData.openid = mockOpenid;
+      console.log("【调试模式】使用模拟openid:", mockOpenid);
+    } else {
+      this.globalData.openid = wx.getStorageSync("openid");
+    }
+
+    // 读取用户信息
+    const userInfo = wx.getStorageSync("userInfo");
+    if (userInfo && userInfo.nickName) {
+      this.globalData.userInfo = userInfo;
+      this.globalData.hasUserInfo = true;
+    }
 
     console.log("openid:" + this.globalData.openid)
   },
   globalData: {
     nickName:"",
-    openid:""
+    openid:"",
+    userInfo: {},
+    hasUserInfo: false,
+    // 开发调试：模拟用户列表
+    mockUsers: {
+      userA: {
+        openid: 'mock_openid_user_A',
+        nickName: '测试用户A',
+        avatarUrl: 'https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132'
+      },
+      userB: {
+        openid: 'mock_openid_user_B',
+        nickName: '测试用户B',
+        avatarUrl: 'https://thirdwx.qlogo.cn/mmopen/vi_32/Q0j4TwGTfTLL5YqVrDibMfXmibKz3eYib1YicnQicWwVvibzibFwibibibibibibibibibibibibibibibib/132'
+      },
+      userC: {
+        openid: 'mock_openid_user_C',
+        nickName: '测试用户C',
+        avatarUrl: 'https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132'
+      }
+    }
   }
 })
-

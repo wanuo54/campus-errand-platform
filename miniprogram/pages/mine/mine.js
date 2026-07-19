@@ -9,14 +9,89 @@ Page({
   data: {
     userInfo: {},
     hasUserInfo: false,
-    showDialog: false
+    showDialog: false,
+    showLogoutDialog: false,
+    balance: 0
+  },
+
+  // 跳转到钱包
+  goWallet(){
+    wx.navigateTo({
+      url: '/pages/wallet/wallet'
+    });
+  },
+
+  // 加载钱包余额
+  loadBalance(){
+    if (!app.globalData.openid) return;
+    const db = wx.cloud.database();
+    const _ = db.command;
+    db.collection('wallet').where({
+      _openid: _.eq(app.globalData.openid)
+    }).get().then(res => {
+      if (res.data.length > 0) {
+        this.setData({ balance: res.data[0].balance || 0 });
+        app.globalData.balance = res.data[0].balance || 0;
+      }
+    });
   },
 
   onShowDialog(){
-    this.setData({ showDialog: true })
+    // 点击登录前，确保已经获取了 openid
+    if (!app.globalData.openid) {
+      wx.showLoading({ title: '加载中...' })
+      wx.cloud.callFunction({
+        name: 'login',
+        data: {}
+      }).then(res => {
+        wx.hideLoading()
+        console.log('获取openid成功', res.result)
+        app.globalData.openid = res.result.openid
+        wx.setStorageSync('openid', res.result.openid)
+        this.setData({ showDialog: true })
+      }).catch(err => {
+        wx.hideLoading()
+        console.log('获取openid失败', err)
+        wx.showToast({
+          icon: 'none',
+          title: '登录失败，请检查云函数是否部署'
+        })
+      })
+    } else {
+      this.setData({ showDialog: true })
+    }
   },
   onClose() {
     this.setData({ showDialog: false });
+  },
+
+  // 退出登录相关
+  onShowLogoutDialog(){
+    this.setData({ showLogoutDialog: true });
+  },
+  onLogoutCancel(){
+    this.setData({ showLogoutDialog: false });
+  },
+  onLogoutConfirm(){
+    // 清除全局数据
+    app.globalData.userInfo = {};
+    app.globalData.openid = '';
+    app.globalData.hasUserInfo = false;
+    app.globalData.balance = 0;
+    // 清除本地缓存
+    wx.removeStorageSync('userInfo');
+    wx.removeStorageSync('openid');
+    // 更新页面状态
+    this.setData({
+      userInfo: {},
+      hasUserInfo: false,
+      showLogoutDialog: false,
+      balance: 0
+    });
+    wx.showToast({
+      icon: 'success',
+      title: '已退出登录'
+    });
   },
 
   onChooseAvatar(e) {
@@ -29,11 +104,9 @@ Page({
 			})
 			.then(res => {
 				console.log(res.fileID,"path");
-				// this.data.userInfo.avatarUrl = res.fileID;
 				that.setData({
 					'userInfo.avatarUrl': res.fileID,
 				})
-				// app.globalData.userInfo.avatarUrl = res.fileID;
 			})
 			.catch(
 				error => {
@@ -48,112 +121,95 @@ Page({
 
   onConfirm(){
 	const that = this;
+	// 先把昵称更新到 data 里
 	that.setData({
-		'userInfo.nickName': that.nickName
+		'userInfo.nickName': that.nickName || '微信用户'
 	})
-		db.collection('user_info').where({
-			_openid: _.eq(app.globalData.openid)
-		}).update({
-			// data 传入需要局部更新的数据
-			data: that.data.userInfo
-		}).then(res => {
-			console.log(res);
-			app.globalData.userInfo = that.data.userInfo;
-			wx.setStorageSync('userInfo', app.globalData.userInfo);
+
+  // 如果还没有 openid，先获取
+  if (!app.globalData.openid) {
+    wx.showToast({ icon: 'none', title: '正在登录，请稍候...' })
+    return
+  }
+
+	// 先查用户是否存在
+	db.collection('user_info').where({
+		_openid: _.eq(app.globalData.openid)
+	}).get().then(res => {
+		if (res.data.length > 0) {
+			// 用户已存在，更新
+			return db.collection('user_info').doc(res.data[0]._id).update({
+				data: {
+					nickName: that.data.userInfo.nickName,
+					avatarUrl: that.data.userInfo.avatarUrl
+				}
+			})
+		} else {
+			// 用户不存在，新增
+			var userInfo = {
+				nickName: that.data.userInfo.nickName || '微信用户',
+				avatarUrl: that.data.userInfo.avatarUrl || 'https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132'
+			};
+			return db.collection('user_info').add({
+				data: userInfo
+			})
+		}
+	}).then(res => {
+		console.log('用户信息保存成功', res);
+		// 更新全局数据和缓存
+		app.globalData.userInfo = that.data.userInfo;
+		wx.setStorageSync('userInfo', that.data.userInfo);
+		that.setData({
+			hasUserInfo: true,
+			showDialog: false
 		})
+		wx.showToast({
+			icon: 'success',
+			title: '登录成功'
+		})
+	}).catch(err => {
+		console.log('保存用户信息失败', err);
+		wx.showToast({
+			icon: 'none',
+			title: '登录失败，请重试'
+		})
+	})
   },
 
   onLoad(options){
-    console.log(app.globalData.userInfo)
-    const userInfo = app.globalData.userInfo;
-    if(userInfo != undefined){
-      this.setData({
-        userInfo: userInfo,
-        hasUserInfo: true
-      })
-    }else{
-      app.globalData.userInfo = {};
+    // 从缓存读取 openid
+    const openid = wx.getStorageSync('openid');
+    if (openid) {
+      app.globalData.openid = openid;
+      console.log("openid:" + openid);
     }
-    //页面加载时从缓存读取userInfo信息
-    wx.getStorage({
-      key: 'userInfo',
-      success: res => {
-        console.log(res, "getUserInfo");
-        this.setData({
-          userInfo: res.data,
-          hasUserInfo: true
-        })
-        console.log(this.data.userInfo);
-        app.globalData.userInfo = res.data.userInfo;
-        app.globalData.openid = wx.getStorageSync('openid');
-      },
-      fail: err => { //读取失败，则自定义数据存入
-        console.log("fail:",err);
-        this.addUserInfo();
-      }
-    })
+
+    // 从缓存读取 userInfo
+    const userInfoStorage = wx.getStorageSync('userInfo');
+    if (userInfoStorage && userInfoStorage.nickName) {
+      this.setData({
+        userInfo: userInfoStorage,
+        hasUserInfo: true
+      });
+      app.globalData.userInfo = userInfoStorage;
+      app.globalData.hasUserInfo = true;
+    }
+
+    // 有 openid 就加载余额
+    if (app.globalData.openid) {
+      this.loadBalance();
+    }
   },
 
-	addUserInfo() {
-
-		if (!app.globalData.openid) {
-			wx.cloud.callFunction({
-					name: 'login',
-					data: {}
-				})
-				.then(res => { //login获取openid云函数调用成功
-					console.log(res.result);
-					wx.setStorageSync('openid', res.result.openid);
-          app.globalData.openid = res.result.openid;
-					return db.collection('user_info').where({
-						_openid: _.eq(res.result.openid)
-					}).get();
-				}).catch(err => { //login获取openid云函数调用失败
-					wx.showToast({
-						icon: 'none',
-						title: '请检查登陆状态',
-					})
-					console.log('[云函数] [login] 获取 openid 失败，请检查是否有部署云函数，错误信息：', err)
-				})
-				.then(res => { //获取用户信息成功
-					console.log('获取用户信息成功', res);
-					if (res.data.length > 0) //用户已存在，则记取数据
-					{
-            const {nickName, avatarUrl} = res.data[0]
-						this.setData({
-							userInfo: {nickName, avatarUrl},
-							hasUserInfo: true
-						})
-						app.globalData.userInfo = {nickName, avatarUrl};
-						wx.setStorageSync("userInfo", {nickName, avatarUrl});
-					
-					} else //用户不存在，则add添加数据
-					{
-						var userInfo = {
-							avatarUrl: "https://thirdwx.qlogo.cn/mmopen/vi_32/POgEwh4mIHO4nibH0KlMECNjjGxQUq24ZEaGT4poC6icRiccVGKSyXwibcPq4BWmiaIGuG1icwxaQX6grC9VemZoJ8rg/132",
-							nickName: "微信用户"
-						};
-						app.globalData.userInfo = userInfo;
-						wx.setStorageSync("userInfo", userInfo);
-						this.setData({
-							userInfo: app.globalData.userInfo,
-							hasUserInfo: true
-						})
-						return db.collection('user_info').add({
-							data: userInfo
-						});
-					}
-
-				}).catch(err => { //数据库查询失败
-					console.log('查询用户信息失败', err)
-				})
-				.then(res => { //添加用户信息成功
-					console.log('添加用户信息成功', res);
-
-				}).catch(err => { //添加用户信息失败
-					console.log('添加用户信息失败', err)
-				})
-		}
-	},
+  onShow(){
+    if (app.globalData.openid) {
+      // 如果全局有余额，先显示全局的
+      if (app.globalData.balance !== undefined) {
+        this.setData({ balance: app.globalData.balance });
+      }
+      // 然后重新加载最新的
+      this.loadBalance();
+    }
+  },
 
 })

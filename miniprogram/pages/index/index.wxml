@@ -25,29 +25,60 @@
       <text>最新订单</text>
     </view>
 
-    <van-card wx:for="{{orderList}}" wx:key="index" price="{{item.reward}}" title="{{item.title}}"
-      thumb="{{item.userInfos[0].avatarUrl}}">
-      <view slot="footer" class="card-foot">
-        <view class="info">
-          <text>{{item.userInfos[0].nickName}}</text>
-          <text>发布时间：{{tools.formatTime(item.addtime)}}</text>
+    <view wx:for="{{orderList}}" wx:key="index" class="order-card">
+      <van-card price="{{item.reward}}" title="{{item.title}}"
+        thumb="{{item.userInfos[0].avatarUrl}}">
+        <view slot="footer" class="card-foot">
+          <view class="info">
+            <text>{{item.userInfos[0].nickName}}</text>
+            <text>发布时间：{{tools.formatTime(item.addtime)}}</text>
+          </view>
+          <view>
+            <van-button wx:if="{{!item.isOwn}}" type="info" round size="small" bindtap="toggleDetail"
+             data-index="{{index}}">帮Ta</van-button>
+            <text wx:else>你发布的订单</text>
+          </view>
         </view>
-        <view>
-          <van-button wx:if="{{!item.isOwn}}" type="info" round size="small" bindtap="handleAcceptOrder"
-           data-order-id="{{item._id}}">帮Ta</van-button>
-          <text wx:else>你发布的订单</text>
+        <view slot="bottom">
+        </view>
+        <view slot="tags">
+          <van-tag type="danger">{{item.category}}</van-tag>
+          <van-tag type="primary">{{item.itemSize}}</van-tag>
+        </view>
+        <view slot="price-top">
+          <text style="display: block;">取件地址：{{item.pickUpAddress}}</text>
+          <text>送达地址：{{item.arrivalAddress}}</text>
+        </view>
+      </van-card>
+
+      <!-- 展开的详细信息 + 接单按钮 -->
+      <view class="order-detail {{expandedIndex === index ? 'show' : ''}}">
+        <view class="detail-section">
+          <view class="detail-row">
+            <text class="detail-label">订单详情：</text>
+            <text class="detail-value">{{item.message}}</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">期望送达：</text>
+            <text class="detail-value">{{item.arrivalTime}}</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">物品大小：</text>
+            <text class="detail-value">{{item.itemSize}}</text>
+          </view>
+          <view class="detail-row">
+            <text class="detail-label">联系电话：</text>
+            <text class="detail-value">{{item.tel}}</text>
+          </view>
+        </view>
+        <view class="accept-section">
+          <van-button type="primary" round block bindtap="handleAcceptOrder"
+            data-order-id="{{item._id}}" data-index="{{index}}">
+            我要接单（赏金 ¥{{item.reward}}）
+          </van-button>
+          <view class="accept-tip">接单后请尽快联系发单人，完成后确认送达即可获得赏金</view>
         </view>
       </view>
-      <view slot="bottom">
-      </view>
-      <view slot="tags">
-        <van-tag type="danger">{{item.category}}</van-tag>
-        <van-tag type="primary">{{item.itemSize}}</van-tag>
-      </view>
-      <view slot="price-top">
-        <text style="display: block;">取件地址：{{item.pickUpAddress}}</text>
-        <text>送达地址：{{item.arrivalAddress}}</text>
-      </view>
-    </van-card>
+    </view>
   </view>
 </view>

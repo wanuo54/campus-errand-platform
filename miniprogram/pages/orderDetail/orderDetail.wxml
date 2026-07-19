@@ -19,7 +19,11 @@
                 <van-cell title="接单人" value="{{order.orderTakers[0].nickName}}" />
                 <van-cell title="接单时间" value="{{tools.formatTime(order.orderTakingTime)}}" />
             </block>
+            <block wx:if="{{order.status=='待确认'}}">
+                <van-cell title="申请完成时间" value="{{tools.formatTime(order.applyFinishTime)}}" />
+            </block>
             <block wx:if="{{order.status=='已完成'}}">
+                <van-cell title="完成时间" value="{{tools.formatTime(order.orderFinishTime)}}" />
                 <view class="rate">
                     <text>评分</text>
                     <van-rate
@@ -38,7 +42,12 @@
     </scroll-view>
 
     <view class="footer">
-        <van-button wx:if="{{order.status!='已完成'}}" type="danger" bindtap="handleFinishOrder">已完成订单</van-button>
+        <!-- 接单人：进行中状态 → 申请完成 -->
+        <van-button wx:if="{{isTaker && order.status=='进行中'}}" type="primary" bindtap="handleApplyFinish">申请完成</van-button>
+        <!-- 接单人：待确认状态 → 显示等待 -->
+        <van-button wx:if="{{isTaker && order.status=='待确认'}}" type="default" disabled>等待发单人确认</van-button>
+        <!-- 发单人：待确认状态 → 确认完成 -->
+        <van-button wx:if="{{isPublisher && order.status=='待确认'}}" type="danger" bindtap="handleConfirmFinish">确认完成并付款</van-button>
     </view>
 
 </view>

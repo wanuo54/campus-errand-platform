@@ -45,3 +45,14 @@ page{
    margin: 0 auto;
 }
 
+.logout-btn{
+  margin: 60rpx 30rpx 0;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background-color: #fff;
+  color: #ee0a24;
+  font-size: 30rpx;
+  border-radius: 12rpx;
+}
+

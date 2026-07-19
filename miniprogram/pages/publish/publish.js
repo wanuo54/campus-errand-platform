@@ -1,24 +1,19 @@
 // pages/publish/publish.js
-const chooseLocation = requirePlugin('chooseLocation');
 const app = getApp()
 const db = wx.cloud.database()
 const _ = db.command
 Page({
 
   category: '',
-  pickUpLocation: undefined,
-  arrivalLocation: undefined,
 
   /**
    * 页面的初始数据
    */
   data: {
-    // location: {},
     id: '', // 订单id 根据id有无判断是更新订单还是发起订单
     title: '',
     message: '',
     tel: '',
-    chooseLocationBtnIndex: 1,
     pickUpAddress: '', //取件地址
     arrivalAddress: '', //送达地址
     showArrivalTimePopup: false, //送达时间弹出层是否展示
@@ -104,8 +99,6 @@ Page({
             pickUpAddress: pickUpAddress,
             arrivalAddress: arrivalAddress,
             arrivalTime: arrivalTime,
-            pickUpLocation: db.Geo.Point(this.pickUpLocation.longitude, this.pickUpLocation.latitude),
-            arrivalLocation: db.Geo.Point(this.arrivalLocation.longitude, this.arrivalLocation.latitude),
             addtime: db.serverDate(),
             itemSize: itemSize,
             status: '待接单', 
@@ -118,7 +111,7 @@ Page({
               title: '更新成功',
               complete: res => {
                 console.log(res)
-                wx.redirectTo({
+                wx.switchTab({
                   url: '/pages/orders/orders',
                 })
               }
@@ -134,6 +127,7 @@ Page({
           }
         })
       }else{
+        // 发布新订单：直接创建（订单完成时才扣款）
         db.collection('order_list').add({
           data: {
             category: this.category,
@@ -144,8 +138,6 @@ Page({
             pickUpAddress: pickUpAddress,
             arrivalAddress: arrivalAddress,
             arrivalTime: arrivalTime,
-            pickUpLocation: db.Geo.Point(this.pickUpLocation.longitude, this.pickUpLocation.latitude),
-            arrivalLocation: db.Geo.Point(this.arrivalLocation.longitude, this.arrivalLocation.latitude),
             addtime: db.serverDate(),
             itemSize: itemSize,
             status: '待接单', 
@@ -158,7 +150,7 @@ Page({
               title: '发布成功',
               complete: res => {
                 console.log(res)
-                wx.redirectTo({
+                wx.switchTab({
                   url: '/pages/orders/orders',
                 })
               }
@@ -182,24 +174,6 @@ Page({
     }
   },
 
-
-  onChooseLocation(e) {
-    this.data.chooseLocationBtnIndex =  e.currentTarget.dataset.btnIndex; 
-    const key = 'ROBBZ-DULCB-P52UL-J3P2N-FJZDE-CQBSS'; //使用在腾讯位置服务申请的key
-    const referer = '微信小程序'; //调用插件的app的名称
-    
-    // const location = JSON.stringify({
-    //   latitude: 39.89631551,
-    //   longitude: 116.323459711
-    // });
-    // const category = '生活服务,娱乐休闲';
-
-    // 无location参数默认当前地址
-    wx.navigateTo({
-      url: 'plugin://chooseLocation/index?key=' + key + '&referer=' + referer
-    });
-  },
-
   onLoad(options){
     if(options.id){
       db.collection('order_list').doc(options.id).get().then(res => {
@@ -207,16 +181,14 @@ Page({
         const data = res.data
         
         this.category = data.category;
-        this.pickUpLocation = data.pickUpLocation
-        this.arrivalLocation = data.arrivalLocation
         console.log(res.data)
         this.setData({
           id: data._id,
           title: data.title,
           message: data.message,
           tel: data.tel,
-          pickUpAddress: data.pickUpAddress, //取件地址
-          arrivalAddress: data.arrivalAddress, //送达地址
+          pickUpAddress: data.pickUpAddress,
+          arrivalAddress: data.arrivalAddress,
           arrivalTime: data.arrivalTime,
           itemSize: data.itemSize,
           reward: data.reward,
@@ -236,28 +208,12 @@ Page({
 
   },
 
-  // 从地图选点插件返回后，在页面的onShow生命周期函数中能够调用插件接口，取得选点结果对象
   onShow () {
-    const location = chooseLocation.getLocation(); // 如果点击确认选点按钮，则返回选点结果对象，否则返回null
-    console.log(location, 'location')
-    if(location != null){
-      if(this.data.chooseLocationBtnIndex == 1){
-        this.pickUpLocation = location,
-        this.setData({
-          pickUpAddress: location.name
-        })
-      }else {
-        this.arrivalLocation = location,
-        this.setData({
-          arrivalAddress: location.name
-        })
-      }
-    }
+    // 已移除地图选点功能
   },
 
   onUnload() {
-    // 页面卸载时设置插件选点数据为null，防止再次进入页面，geLocation返回的是上次选点结果
-    chooseLocation.setLocation(null);
+    // 已移除地图选点功能
   },
 
 })

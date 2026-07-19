@@ -67,3 +67,55 @@ swiper .banner, swiper .banner image{
 .van-card .card-foot .info text:last-child{
     color: #808080;
 }
+
+.order-card{
+    margin-top: 20rpx;
+    position: relative;
+}
+
+.order-detail{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background-color: #fff;
+    border-radius: 0 0 10rpx 10rpx;
+    margin-top: -10rpx;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+.order-detail.show{
+    max-height: 600rpx;
+}
+
+.detail-section{
+    padding: 30rpx 30rpx 20rpx;
+    border-top: 1rpx solid #eee;
+}
+
+.detail-row{
+    display: flex;
+    margin-bottom: 16rpx;
+    font-size: 26rpx;
+}
+
+.detail-label{
+    color: #999;
+    width: 160rpx;
+    flex-shrink: 0;
+}
+
+.detail-value{
+    color: #333;
+    flex: 1;
+}
+
+.accept-section{
+    padding: 20rpx 30rpx 30rpx;
+}
+
+.accept-tip{
+    text-align: center;
+    font-size: 22rpx;
+    color: #999;
+    margin-top: 16rpx;
+}

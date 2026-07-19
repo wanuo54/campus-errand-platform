@@ -18,6 +18,10 @@
               <van-button wx:if="{{item.status == '待接单'}}" type="danger" round size="small" catchtap="handleCancelOrder" 
               data-index="{{index}}"
               data-order-id="{{item._id}}">取消</van-button>
+              <!-- 待确认状态：发单人确认完成 -->
+              <van-button wx:if="{{item.status == '待确认'}}" type="primary" round size="small" catchtap="handleConfirmFinish"
+              data-index="{{index}}"
+              data-order-id="{{item._id}}">确认完成</van-button>
               <van-button wx:if="{{item.status == '已完成'}}" type="danger" round size="small" catchtap="toComment"
               data-order-id="{{item._id}}">评价</van-button>
             </view>
@@ -51,9 +55,11 @@
               <text>发布时间：{{tools.formatTime(item.addtime)}}</text>
             </view>
             <view>
-              <!-- catchtap阻止事件冒泡 -->
-              <van-button wx:if="{{item.status == '进行中'}}" type="danger" round size="small" catchtap="handleFinishOrder" data-index="{{index}}"
-              data-order-id="{{item._id}}">已完成订单</van-button>
+              <!-- 进行中：接单人申请完成 -->
+              <van-button wx:if="{{item.status == '进行中'}}" type="primary" round size="small" catchtap="handleApplyFinish" data-index="{{index}}"
+              data-order-id="{{item._id}}">申请完成</van-button>
+              <!-- 待确认：显示等待提示 -->
+              <van-tag wx:if="{{item.status == '待确认'}}" type="warning">等待确认</van-tag>
             </view>
           </view>
           <view slot="bottom">

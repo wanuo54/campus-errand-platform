@@ -1,0 +1,9 @@
+{
+  "name": "walletCompleteOrder",
+  "version": "1.0.0",
+  "description": "订单完成结算（发单人扣款+接单人加钱）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

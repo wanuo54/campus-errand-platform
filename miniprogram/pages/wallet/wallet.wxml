@@ -1,0 +1,65 @@
+<!--pages/wallet/wallet.wxml-->
+<wxs src="../../utils/tools.wxs" module="tools" />
+<view class="wallet-page">
+
+  <!-- 余额卡片 -->
+  <view class="balance-card">
+    <view class="balance-label">账户余额（元）</view>
+    <view class="balance-amount">¥{{balance}}</view>
+    <view class="balance-btns">
+      <view class="balance-btn" bindtap="onShowRecharge">充值</view>
+      <view class="balance-btn outline" bindtap="onWithdraw">提现</view>
+    </view>
+  </view>
+
+  <!-- 交易记录 -->
+  <view class="records-section">
+    <view class="records-title">交易记录</view>
+    <view class="records-list">
+      <block wx:if="{{records.length > 0}}">
+        <view wx:for="{{records}}" wx:key="_id" class="record-item">
+          <view class="record-left">
+            <view class="record-title">{{item.title}}</view>
+            <view class="record-time">{{tools.formatTime(item.createTime)}}</view>
+          </view>
+          <view class="record-amount {{item.type === 'income' ? 'income' : 'expense'}}">
+            {{item.type === 'income' ? '+' : '-'}}¥{{item.amount}}
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty-tip">暂无交易记录</view>
+    </view>
+  </view>
+
+  <!-- 充值弹窗 -->
+  <van-dialog
+    use-slot
+    title="充值"
+    show="{{ showRecharge }}"
+    show-cancel-button
+    bind:confirm="onConfirmRecharge"
+    bind:cancel="onCloseRecharge"
+  >
+    <view class="recharge-content">
+      <view class="quick-amounts">
+        <view
+          wx:for="{{quickAmounts}}"
+          wx:key="index"
+          class="quick-item {{rechargeAmount == item ? 'active' : ''}}"
+          bindtap="selectQuickAmount"
+          data-amount="{{item}}"
+        >
+          ¥{{item}}
+        </view>
+      </view>
+      <van-field
+        model:value="{{ rechargeAmount }}"
+        type="digit"
+        label="自定义金额"
+        placeholder="请输入充值金额"
+      />
+      <view class="recharge-tip">当前为演示版本，充值金额为模拟数据</view>
+    </view>
+  </van-dialog>
+
+</view>
