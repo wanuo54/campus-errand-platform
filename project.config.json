@@ -5,7 +5,20 @@
   "cloudfunctionRoot": "cloudfunctions/",
   "libVersion": "2.32.0",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "cloudfunctions/adminApi/node_modules"
+      },
+      {
+        "type": "folder",
+        "value": "node_modules"
+      },
+      {
+        "type": "file",
+        "value": ".git"
+      }
+    ],
     "include": []
   },
   "setting": {

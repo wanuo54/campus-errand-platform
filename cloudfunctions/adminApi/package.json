@@ -1,0 +1,9 @@
+{
+  "name": "adminApi",
+  "version": "1.0.0",
+  "description": "新工快送后台管理API",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

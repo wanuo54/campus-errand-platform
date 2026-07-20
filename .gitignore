@@ -1,4 +1,6 @@
 
 /miniprogram/node_modules
+/admin/node_modules
+/admin/dist
 *.exe
 
